@@ -215,8 +215,8 @@ create_model_results(lipoproteins)
 
 # Plotting model results
 ```{r}
-model_results <- create_model_results(lipoproteins)
-
+model_results2 <- create_model_results(lipoproteins)
+class(model_results)
 #' Plot the estimates and standard errors of the model results
 #'
 #' @param results The model results.
@@ -236,7 +236,7 @@ create_plot_model_results <- function(results) {
     ggplot2::geom_vline(xintercept = 1, linetype = "dashed") +
     ggplot2::facet_grid(cols = ggplot2::vars(model))
 }
-create_plot_model_results(model_results)
+create_plot_model_results(model_results2)
 
 
 ```
