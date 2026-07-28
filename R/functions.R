@@ -61,6 +61,8 @@ create_plot_distributions <- function(data) {
     )
 }
 
+# Turning it into generalised function
+
 #' Making data ready for running model
 #'
 #' @param data Data set with lipoproteins.
@@ -75,6 +77,7 @@ ready_data <- function(data) {
       value = as.vector(scale(value))
     )
 }
+ready_data(lipoproteins)
 
 #' Function to test model on a single metabolite
 #'
@@ -82,20 +85,29 @@ ready_data <- function(data) {
 #' @param model Model you wish to run in glm.
 #'
 #' @returns Data frame with coefficients, sd and p val.
-create_model_results <- function(data, model) {
-  data <- data |>
-    ready_data() |>
-    filter(metabolite == "insulin")
-
+fit_model <- function(data, model) {
   glm(
     formula = model,
     data = data,
     family = binomial
   ) |>
     broom::tidy(exponentiate = TRUE) |>
-    mutate(
+    dplyr::mutate(
       metabolite = unique(data$metabolite),
       model = format(model),
-      .before = everything()
+      .before = tidyselect::everything()
     )
+}
+
+#' Create model results
+#'
+#' @param data Lipidomics data
+#' @param model Model to run
+#'
+#' @returns Data frame with model results for insulin metabolite
+create_model_results <- function(data, model) {
+  data <- data |>
+    ready_data() |>
+    dplyr::filter(metabolite == "insulin") |>
+    fit_model(model)
 }

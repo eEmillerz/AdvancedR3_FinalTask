@@ -185,22 +185,54 @@ glm(
 #' @param model Model you wish to run in glm.
 #'
 #' @returns Data frame with coefficients, sd and p val.
-create_model_results <- function(data, model) {
-  data <- data |>
-    ready_data() |>
-    filter(metabolite == "insulin")
-
+fit_model <- function(data, model) {
   glm(
     formula = model,
     data = data,
     family = binomial
   ) |>
     broom::tidy(exponentiate = TRUE) |>
-    mutate(
+    dplyr::mutate(
       metabolite = unique(data$metabolite),
       model = format(model),
-      .before = everything()
+      .before = tidyselect::everything()
     )
 }
+
+# Create model results now
+#' Create model results
+#'
+#' @param data Lipidomics data
+#' @param model Model to run
+#'
+#' @returns Data frame with model results for insulin metabolite
+create_model_results <- function(data, model) {
+  data <- data |>
+    ready_data() |>
+    dplyr::filter(metabolite == "insulin") |>
+    fit_model(model)
+}
 create_model_results(lipoproteins, lipidosis ~ value)
+```
+
+# Running model on all metabolites
+```{r}
+fit_model_on_all <- function(data, model) {
+  list(model) |>
+    purrr::map(\(model) fit_model(data, model = model)) |>
+    purrr::list_rbind()
+}
+```
+
+# Future targets
+```{r}
+
+  ),
+  tar_target(
+    name = model_results,
+    command = create_model_results(lipoproteins)
+  ),
+  tar_target(
+    name = plot_model_results,
+    command = create_plot_model_results(model_results)
 ```
