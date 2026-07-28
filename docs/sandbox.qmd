@@ -1,0 +1,102 @@
+---
+title: "sandbox"
+format: html
+---
+```{r setup}
+#| include: false
+library(readr)
+library(here)
+library(tidyverse)
+library(targets)
+library(snakecase)
+tar_config_set(store = here::here("_targets"))
+source(here::here("R/functions.R"))
+```
+
+## Reading data
+
+```{r}
+lipoproteins <- readr::read_csv(here::here("data/Metabolites_dragons_with_lipoproteins.csv"), 
+                                show_col_types = FALSE,
+                                name_repair = to_snake_case)
+```
+## Creating table with descriptive statistics
+First removing unwanted data and then transforming data to long format
+```{r}
+# Preprocessing
+lipoproteins |>
+  select(
+    -c(grade, other_liver_disease, weight, age, hu, fat_perc, fibrosis_perc, uric_acid)
+    ) |>
+  pivot_longer(
+    cols = -c(id, lipidosis)) |>
+  rename("metabolite" = name)
+
+# Preprocess function
+preprocess <- function(data) {
+  data |>  
+  dplyr::select(
+    -c(grade, other_liver_disease, weight, age, hu, fat_perc, fibrosis_perc, uric_acid)
+    ) |>
+  tidyr::pivot_longer(
+    cols = -c(id, lipidosis)) |>
+  dplyr::rename("metabolite" = name)
+}
+```
+Now the statistics table can be created:
+```{r}
+lipoproteins |>
+  preprocess() |>
+  summarise(
+    across(
+      -c(id, lipidosis),
+      list(mean = mean, sd = sd, median = median, 
+           iqr = \(x) IQR(x, na.rm = TRUE))
+    ), 
+    .by = c(metabolite)
+  ) |>
+  filter(!is.na(c(value_sd))) |>
+  mutate(across(where(is.numeric), \(x) round(x, digits = 1))) |>
+  mutate(MeanSD = glue::glue("{value_mean} ({value_sd})")) |>
+  mutate(MedianIQR = glue::glue("{value_median} ({value_iqr})")) |>
+  select(Metabolite = metabolite, "Mean (SD)" = MeanSD, "Median (IQR)" = MedianIQR)
+
+# Generalising into a function
+create_table_descriptive_stats <- function(data) {
+  data |>
+  preprocess() |>
+  dplyr::summarise(
+    dplyr::across(
+      -c(id, lipidosis),
+      list(mean = mean, sd = sd, median = median, 
+           iqr = \(x) IQR(x, na.rm = TRUE))
+    ), 
+    .by = c(metabolite)
+  ) |>
+  dplyr::filter(!is.na(c(value_sd))) |>
+  dplyr::mutate(across(where(is.numeric), \(x) round(x, digits = 1))) |>
+  dplyr::mutate(MeanSD = glue::glue("{value_mean} ({value_sd})")) |>
+  dplyr::mutate(MedianIQR = glue::glue("{value_median} ({value_iqr})")) |>
+  dplyr::select(Metabolite = metabolite, "Mean (SD)" = MeanSD, "Median (IQR)" = MedianIQR)
+}
+create_table_descriptive_stats(lipoproteins)
+```
+
+# Future targets
+```{r}
+#| eval: false
+  ),
+  tar_target(
+    name = plot_distributions,
+    command = create_plot_distributions(lipoproteins)
+  ),
+  tar_target(
+    name = model_results,
+    command = create_model_results(lipoproteins)
+  ),
+  tar_target(
+    name = plot_model_results,
+    command = create_plot_model_results(model_results)
+  )
+```
+
