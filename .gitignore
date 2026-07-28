@@ -9,3 +9,5 @@
 .quarto
 *.html
 *_files
+docs/figures/
+docs/_targets.yaml
