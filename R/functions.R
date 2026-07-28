@@ -81,19 +81,18 @@ ready_data <- function(data) {
 #' Function to test model on a single metabolite
 #'
 #' @param data Lipoproteins data set.
-#' @param model Model you wish to run in glm.
 #'
 #' @returns Data frame with coefficients, sd and p val.
-fit_model <- function(data, model) {
+fit_model <- function(data) {
   glm(
-    formula = model,
+    formula = lipidosis ~ value,
     data = data,
     family = binomial
   ) |>
     broom::tidy(exponentiate = TRUE) |>
     dplyr::mutate(
       metabolite = unique(data$metabolite),
-      model = format(model),
+      model = format(lipidosis ~ value),
       .before = tidyselect::everything()
     )
 }
@@ -101,12 +100,12 @@ fit_model <- function(data, model) {
 #' Create model results
 #'
 #' @param data Lipidomics data
-#' @param model Model to run
 #'
 #' @returns Data frame with model results for insulin metabolite
-create_model_results <- function(data, model) {
-  data <- data |>
+create_model_results <- function(data) {
+  data |>
     ready_data() |>
-    dplyr::filter(metabolite == "insulin") |>
-    fit_model(model)
+    dplyr::group_split(metabolite) |>
+    purrr::map(fit_model) |>
+    purrr::list_rbind()
 }
