@@ -1,21 +1,34 @@
+#' Preprocess data to make it suitable for creating a table of descriptive statistics
+#'
+#' @param data Lipoproteins data.
+#'
+#' @returns Preprocessed lipoproteins data (pivoted longer).
 preprocess <- function(data) {
   data |>
     dplyr::select(
       -c(grade, other_liver_disease, weight, age, hu, fat_perc, fibrosis_perc, uric_acid)
     ) |>
     tidyr::pivot_longer(
-      cols = -c(id, lipidosis)) |>
+      cols = -c(id, lipidosis)
+    ) |>
     dplyr::rename("metabolite" = name)
 }
 
+#' Create a table of descriptive statistics for each metabolite
+#'
+#' @param data Lipoproteins data
+#'
+#' @returns A table of descriptive statistics for each metabolite.
 create_table_descriptive_stats <- function(data) {
   data |>
     preprocess() |>
     dplyr::summarise(
       dplyr::across(
         -c(id, lipidosis),
-        list(mean = mean, sd = sd, median = median,
-             iqr = \(x) IQR(x, na.rm = TRUE))
+        list(
+          mean = mean, sd = sd, median = median,
+          iqr = \(x) IQR(x, na.rm = TRUE)
+        )
       ),
       .by = c(metabolite)
     ) |>
