@@ -77,7 +77,6 @@ ready_data <- function(data) {
       value = as.vector(scale(value))
     )
 }
-ready_data(lipoproteins)
 
 #' Function to test model on a single metabolite
 #'
