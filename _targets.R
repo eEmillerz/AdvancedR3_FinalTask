@@ -6,6 +6,7 @@
 # Load packages required to define the pipeline:
 library(targets)
 library(tarchetypes)
+library(snakecase)
 
 # Set target options:
 tar_option_set(
@@ -61,17 +62,4 @@ list(
   tar_target(
     name = table_descriptive_stats,
     command = create_table_descriptive_stats(lipoproteins)
-  ),
-  tar_target(
-    name = plot_distributions,
-    command = create_plot_distributions(lipoproteins)
-  ),
-  tar_target(
-    name = model_results,
-    command = create_model_results(lipoproteins)
-  ),
-  tar_target(
-    name = plot_model_results,
-    command = create_plot_model_results(model_results)
-  )
 )
