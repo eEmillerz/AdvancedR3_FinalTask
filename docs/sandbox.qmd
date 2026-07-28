@@ -131,19 +131,76 @@ create_plot_distributions <- function(data) {
 }
 ```
 
+# Running model on one metabolite
 
-# Future targets
+First preparing data for analysis
 ```{r}
-#| eval: false
-  tar_target(
-    name = plot_distributions,
-    command = create_plot_distributions(lipoproteins)
-  ),
-  tar_target(
-    name = model_results,
-    command = create_model_results(lipoproteins)
-  ),
-  tar_target(
-    name = plot_model_results,
-    command = create_plot_model_results(model_results)
+lipoproteins |>
+  preprocess() |>
+  mutate(
+    lipidosis = as.factor(lipidosis),
+    value = as.vector(scale(value))
+  )
+# Turning it into generalised function
+
+#' Making data ready for running model
+#'
+#' @param data Data set with lipoproteins.
+#'
+#' @returns Ready data set for model analysis.
+
+ready_data <- function(data) {
+  data |>
+    preprocess() |>
+    dplyr::mutate(
+      lipidosis = as.factor(lipidosis),
+      value = as.vector(scale(value))
+    )
+}
+ready_data(lipoproteins)
+```
+
+```{r}
+just_insulin <- lipoproteins |>
+  ready_data() |>
+  filter(metabolite == "insulin")
+
+glm(
+  formula = lipidosis ~ value,
+  data = just_insulin,
+  family = binomial
+) |>
+  broom::tidy(exponentiate = TRUE) |>
+  mutate(
+    metabolite = unique(just_insulin$metabolite),
+    model = format(lipidosis ~ value),
+    .before = everything()
+  )
+
+# Making generalised function
+
+#' Function to test model on a single metabolite
+#'
+#' @param data Lipoproteins data set.
+#' @param model Model you wish to run in glm.
+#'
+#' @returns Data frame with coefficients, sd and p val.
+create_model_results <- function(data, model) {
+  data <- data |>
+    ready_data() |>
+    filter(metabolite == "insulin")
+
+  glm(
+    formula = model,
+    data = data,
+    family = binomial
+  ) |>
+    broom::tidy(exponentiate = TRUE) |>
+    mutate(
+      metabolite = unique(data$metabolite),
+      model = format(model),
+      .before = everything()
+    )
+}
+create_model_results(lipoproteins, lipidosis ~ value)
 ```
