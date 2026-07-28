@@ -1,45 +1,49 @@
 ---
 # Uses Quarto metadata: https://quarto.org/docs/journals/authors.html
-title: ""
+title: "**Advanced R3 final project:** Histologic, biochemistry, and metabolomics data for bearded dragons with hepatic fat accumulation"
 author:
-  - name: ""
-    orcid: ""
+  - name: "Emil Skovbo Uldahl Pedersen"
+    orcid: "0009-0008-6161-2314"
     affiliations: 
-        - name: ""
+        - name: "University of Southern Denmark"
 date: last-modified
 format: html
 execute:
   echo: false
+toc: true
+toc-depth: 4
+toc_location: left
+toc-title: "Navigation"
+number-sections: true
+code-fold: true
+smooth-scroll: true
 ---
 
 ```{r setup}
 #| include: false
+library(here)
+library(tidyverse)
+library(targets)
+tar_config_set(store = here::here("_targets"))
+source(here::here("R/functions.R"))
 ```
 
-# Abstract
+# Goal of the project
 
-Objective:
+**Research question, models and products**
 
-Research Design and Methods:
+- Which metabolites seem to impact the lipidosis classification of the bearded dragons the most?
+  - Logistic model: **lipidosis ~ every_metabolite** *(lipidosis is outcome variable, metabolite value is the predictor)*.
 
-Results:
 
-Conclusions:
+**Product:**
 
-# Introduction 
+- Full table with each metabolite, the term (intercept / metabolite value) as well as the corresponding coefficient + statistical values (model results)
+- Table as above, with only statistically significant metabolites
+- Table with descriptive statistics of each metabolite (mean, median, standard deviation, iqr)
+- Plot of each metabolite distribution
+- Figure of model estimates with the coefficient of each metabolite being shown to determine the best predictors.
 
-# Research Design and Methods
+![Project workflow](figures/project_workflow.png){fig-align="center"}
 
-# Results
 
-# Conclusions
-
-# Acknowledgements
-
-# References
-
-# Tables
-
-# Figures
-
-# Supplemental Material
