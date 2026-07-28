@@ -54,7 +54,8 @@ list(
   tar_target(
     name = file,
     command = "data/Metabolites_dragons_with_lipoproteins.csv",
-    format = "file"),
+    format = "file"
+  ),
   tar_target(
     name = lipoproteins,
     command = readr::read_csv(file, show_col_types = FALSE, name_repair = to_snake_case)
@@ -62,4 +63,9 @@ list(
   tar_target(
     name = table_descriptive_stats,
     command = create_table_descriptive_stats(lipoproteins)
+  ),
+  tar_target(
+    name = plot_distributions,
+    command = create_plot_distributions(lipoproteins)
+  )
 )
