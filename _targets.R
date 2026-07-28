@@ -51,12 +51,27 @@ tar_source()
 # Replace the target list below with your own:
 list(
   tar_target(
-    name = data,
-    command = tibble(x = rnorm(100), y = rnorm(100))
-    # format = "qs" # Efficient storage for general data objects.
+    name = file,
+    command = "data/Metabolites_dragons_with_lipoproteins.csv",
+    format = "file"),
+  tar_target(
+    name = lipoproteins,
+    command = readr::read_csv(file, show_col_types = FALSE, name_repair = to_snake_case)
   ),
   tar_target(
-    name = model,
-    command = coefficients(lm(y ~ x, data = data))
+    name = table_descriptive_stats,
+    command = create_table_descriptive_stats(lipoproteins)
+  ),
+  tar_target(
+    name = plot_distributions,
+    command = create_plot_distributions(lipoproteins)
+  ),
+  tar_target(
+    name = model_results,
+    command = create_model_results(lipoproteins)
+  ),
+  tar_target(
+    name = plot_model_results,
+    command = create_plot_model_results(model_results)
   )
 )
