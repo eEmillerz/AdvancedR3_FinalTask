@@ -16,9 +16,10 @@ source(here::here("R/functions.R"))
 ## Reading data
 
 ```{r}
-lipoproteins <- readr::read_csv(here::here("data/Metabolites_dragons_with_lipoproteins.csv"), 
-                                show_col_types = FALSE,
-                                name_repair = to_snake_case)
+lipoproteins <- readr::read_csv(here::here("data/Metabolites_dragons_with_lipoproteins.csv"),
+  show_col_types = FALSE,
+  name_repair = to_snake_case
+)
 ```
 ## Creating table with descriptive statistics
 First removing unwanted data and then transforming data to long format
@@ -27,20 +28,22 @@ First removing unwanted data and then transforming data to long format
 lipoproteins |>
   select(
     -c(grade, other_liver_disease, weight, age, hu, fat_perc, fibrosis_perc, uric_acid)
-    ) |>
+  ) |>
   pivot_longer(
-    cols = -c(id, lipidosis)) |>
+    cols = -c(id, lipidosis)
+  ) |>
   rename("metabolite" = name)
 
 # Preprocess function
 preprocess <- function(data) {
-  data |>  
-  dplyr::select(
-    -c(grade, other_liver_disease, weight, age, hu, fat_perc, fibrosis_perc, uric_acid)
+  data |>
+    dplyr::select(
+      -c(grade, other_liver_disease, weight, age, hu, fat_perc, fibrosis_perc, uric_acid)
     ) |>
-  tidyr::pivot_longer(
-    cols = -c(id, lipidosis)) |>
-  dplyr::rename("metabolite" = name)
+    tidyr::pivot_longer(
+      cols = -c(id, lipidosis)
+    ) |>
+    dplyr::rename("metabolite" = name)
 }
 ```
 Now the statistics table can be created:
@@ -50,9 +53,11 @@ lipoproteins |>
   summarise(
     across(
       -c(id, lipidosis),
-      list(mean = mean, sd = sd, median = median, 
-           iqr = \(x) IQR(x, na.rm = TRUE))
-    ), 
+      list(
+        mean = mean, sd = sd, median = median,
+        iqr = \(x) IQR(x, na.rm = TRUE)
+      )
+    ),
     .by = c(metabolite)
   ) |>
   filter(!is.na(c(value_sd))) |>
@@ -64,28 +69,72 @@ lipoproteins |>
 # Generalising into a function
 create_table_descriptive_stats <- function(data) {
   data |>
-  preprocess() |>
-  dplyr::summarise(
-    dplyr::across(
-      -c(id, lipidosis),
-      list(mean = mean, sd = sd, median = median, 
-           iqr = \(x) IQR(x, na.rm = TRUE))
-    ), 
-    .by = c(metabolite)
-  ) |>
-  dplyr::filter(!is.na(c(value_sd))) |>
-  dplyr::mutate(across(where(is.numeric), \(x) round(x, digits = 1))) |>
-  dplyr::mutate(MeanSD = glue::glue("{value_mean} ({value_sd})")) |>
-  dplyr::mutate(MedianIQR = glue::glue("{value_median} ({value_iqr})")) |>
-  dplyr::select(Metabolite = metabolite, "Mean (SD)" = MeanSD, "Median (IQR)" = MedianIQR)
+    preprocess() |>
+    dplyr::summarise(
+      dplyr::across(
+        -c(id, lipidosis),
+        list(
+          mean = mean, sd = sd, median = median,
+          iqr = \(x) IQR(x, na.rm = TRUE)
+        )
+      ),
+      .by = c(metabolite)
+    ) |>
+    dplyr::filter(!is.na(c(value_sd))) |>
+    dplyr::mutate(across(where(is.numeric), \(x) round(x, digits = 1))) |>
+    dplyr::mutate(MeanSD = glue::glue("{value_mean} ({value_sd})")) |>
+    dplyr::mutate(MedianIQR = glue::glue("{value_median} ({value_iqr})")) |>
+    dplyr::select(Metabolite = metabolite, "Mean (SD)" = MeanSD, "Median (IQR)" = MedianIQR)
 }
 create_table_descriptive_stats(lipoproteins)
 ```
 
+# Creating plot to show distributions
+```{r}
+lipoproteins |>
+  preprocess() |>
+  filter(metabolite %in% c("insulin", "hdl", "ldl", "chol", "na", "k", "cl", "ca", "phosphate")) |>
+  ggplot(aes(x = value)) +
+  geom_histogram() +
+  facet_wrap(vars(metabolite), scales = "free") +
+  theme(
+    plot.title = element_text(hjust = 0.5)
+  ) +
+  labs(
+    x = "Metabolite value",
+    y = "Count",
+    title = "Metabolite value distributions"
+  )
+
+# Turning it into a generalised function
+
+#' Create a plot showing metabolite distributions
+#'
+#' @param data Lipoproteins data set.
+#'
+#' @returns Plot showing metabolite distributions.
+create_plot_distributions <- function(data) {
+  data |>
+    preprocess() |>
+    dplyr::filter(metabolite %in% c("insulin", "hdl", "ldl", "chol", "na", "k", "cl", "ca", "phosphate")) |>
+    ggplot2::ggplot(aes(x = value)) +
+    ggplot2::geom_histogram() +
+    ggplot2::facet_wrap(vars(metabolite), scales = "free") +
+    ggplot2::theme(
+      plot.title = element_text(hjust = 0.5)
+    ) +
+    ggplot2::labs(
+      x = "Metabolite value",
+      y = "Count",
+      title = "Metabolite value distributions"
+    )
+}
+```
+
+
 # Future targets
 ```{r}
 #| eval: false
-  ),
   tar_target(
     name = plot_distributions,
     command = create_plot_distributions(lipoproteins)
@@ -97,6 +146,4 @@ create_table_descriptive_stats(lipoproteins)
   tar_target(
     name = plot_model_results,
     command = create_plot_model_results(model_results)
-  )
 ```
-
