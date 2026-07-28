@@ -46,10 +46,15 @@ source(here::here("R/functions.R"))
 
 ![Project workflow](figures/project_workflow.png){fig-align="center"}
 
+# Distribution of metabolites
+```{r}
+tar_read(plot_distributions)
+```
+
+
 # Table with descriptive statistics of each metabolite
 
 ```{r}
 tar_read(table_descriptive_stats) |>
-    knitr::kable()
+  knitr::kable()
 ```
-
