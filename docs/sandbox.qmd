@@ -117,11 +117,11 @@ create_plot_distributions <- function(data) {
   data |>
     preprocess() |>
     dplyr::filter(metabolite %in% c("insulin", "hdl", "ldl", "chol", "na", "k", "cl", "ca", "phosphate")) |>
-    ggplot2::ggplot(aes(x = value)) +
+    ggplot2::ggplot(ggplot2::aes(x = value)) +
     ggplot2::geom_histogram() +
-    ggplot2::facet_wrap(vars(metabolite), scales = "free") +
+    ggplot2::facet_wrap(ggplot2::vars(metabolite), scales = "free") +
     ggplot2::theme(
-      plot.title = element_text(hjust = 0.5)
+      plot.title = ggplot2::element_text(hjust = 0.5)
     ) +
     ggplot2::labs(
       x = "Metabolite value",
