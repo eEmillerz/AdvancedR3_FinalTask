@@ -60,3 +60,20 @@ create_plot_distributions <- function(data) {
       title = "Metabolite value distributions"
     )
 }
+
+# Turning it into generalised function
+
+#' Making data ready for running model
+#'
+#' @param data Data set with lipoproteins.
+#'
+#' @returns Ready data set for model analysis.
+
+ready_data <- function(data) {
+  data |>
+    preprocess() |>
+    dplyr::mutate(
+      lipidosis = as.factor(lipidosis),
+      value = as.vector(scale(value))
+    )
+}
