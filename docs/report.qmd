@@ -38,8 +38,6 @@ source(here::here("R/functions.R"))
 
 **Product:**
 
-- Full table with each metabolite, the term (intercept / metabolite value) as well as the corresponding coefficient + statistical values (model results)
-- Table as above, with only statistically significant metabolites
 - Table with descriptive statistics of each metabolite (mean, median, standard deviation, iqr)
 - Plot of each metabolite distribution
 - Figure of model estimates with the coefficient of each metabolite being shown to determine the best predictors.
@@ -50,11 +48,10 @@ source(here::here("R/functions.R"))
 ```{r}
 tar_read(plot_distributions)
 ```
-# Model results
+# Model results plot
 ```{r}
-tar_read(model_results)
+tar_read(plot_model_results)
 ```
-
 
 # Table with descriptive statistics of each metabolite
 
